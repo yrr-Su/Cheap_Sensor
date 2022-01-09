@@ -2,13 +2,9 @@
 
 data
 tool
+picture
 
 
 *.pyc
 *.pub
-
-
-TSMC
-TaiChung_PBL
-Taichung_Visibility
-instrument
+*private_key
