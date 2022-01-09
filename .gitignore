@@ -1,0 +1,14 @@
+# yrr zone
+
+data
+tool
+
+
+*.pyc
+*.pub
+
+
+TSMC
+TaiChung_PBL
+Taichung_Visibility
+instrument
