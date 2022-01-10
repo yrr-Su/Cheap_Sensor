@@ -38,7 +38,7 @@ def run():
 	
 	# data collection
 	## sensor 2021-12-28 to 2022-01-07
-	'''
+	# '''
 	## parameter
 	ST_TIME = dtm(2021,12,29)
 	ED_TIME = dtm(2022,1,8)
@@ -50,7 +50,7 @@ def run():
 	process_num = [0,1,5,8]
 	for _num in process_num:
 		ntut_num = sensor.reader(ST_TIME,ED_TIME,PATH_SENSOR,tunnel_num=_num)
-		dic_collect[f'ntut{_num}'] = ntut_num.get_data()
+		dic_collect[f'ntut{_num}'] = ntut_num.get_data(mean_freq='1h')
 
 	PATH_SAVE = Path('..')/'..'/'meeting'/'20220111'/'data'
 	with open(PATH_SAVE/'sensor_dt.pkl','wb') as f:
@@ -58,14 +58,14 @@ def run():
 	# '''
 
 	## station_gas 2021-12-28 to 2022-01-07
-	'''
+	# '''
 	## parameter
-	ST_TIME = dtm(2021,12,28)
+	ST_TIME = dtm(2021,12,29)
 	ED_TIME = dtm(2022,1,8)
 
 	## collect
 	gas = station.reader(ST_TIME,ED_TIME,PATH_STATION)
-	dt = gas.get_data(mean_freq='10T')
+	dt = gas.get_data(mean_freq='1h')
 
 	PATH_SAVE = Path('..')/'..'/'meeting'/'20220111'/'data'
 	with open(PATH_SAVE/'station_dt.pkl','wb') as f:
