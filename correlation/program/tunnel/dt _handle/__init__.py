@@ -9,11 +9,18 @@ from os import listdir, mkdir
 from os.path import join as pth, exists, dirname, realpath
 import pickle as pkl
 from numpy import array, nan
-from pandas import date_range, concat
+from pandas import date_range, concat, read_csv
 import json as jsn
 
 ## bugs box
 """
+
+
+# """
+
+## function box
+"""
+1. concat pkl data and raw data | make a log file to record data in pkl
 
 
 
@@ -27,8 +34,8 @@ __all__ = [
 
 
 # parameter
-cur_file_path = dirname(realpath(__file__))
-with open(pth(cur_file_path,'metadata.json'),'r') as f:
+cur_file_path = Path(dirname(realpath(__file__)))
+with open(cur_file_path/'metadata.json','r') as f:
 	meta_dt = jsn.load(f)
 
 # class
@@ -36,30 +43,35 @@ with open(pth(cur_file_path,'metadata.json'),'r') as f:
 ## list the file in the path and 
 ## read pickle file if it exisits, else read raw data and dump the pickle file
 class reader:
-	
-	nam = None
 
 	## initial setting
-	## input : file path, 
+	## input :  
 	## 		   start time,
 	## 		   final time,
-	## 		   instrument name,
+	## 		   path of sensor,
+	## 		   tunnel number,
 	## 		   reset switch
 	## 
 	## because the pickle file will be generated after read raw data first time,
 	## if want to re-read the rawdata, please set 'reser=True'
 
-	def __init__(self,_path,_sta,_fin,_reset=False):
+	def __init__(self,_sta,_fin,_path,tunnel_num,_reset=False):
+		self.nam = f'ntut{tunnel_num}'
+
+		if self.nam not in meta_dt['tunnel2fname'].keys(): 
+			print('\n'.join([_ for _ in meta_dt['tunnel2fname'].keys()]))
+			raise KeyError(f'{self.nam} is not in the tunnel list above')
+
 		print(f'\n{self.nam}')
 		print('='*65)
 		print(f"Reading file and process data")
 
 		## class parameter
 		self.index = lambda _freq: date_range(_sta,_fin,freq=_freq)
-		self.path  = _path
+		self.path  = _path/self.nam
 		self.reset = _reset
 		self.meta_read = meta_dt[self.nam]['read']
-		self.meta_plot = meta_dt[self.nam]['plot']
+		# self.meta_plot = meta_dt[self.nam]['plot']
 		self.pkl_nam = f'{self.nam.lower()}.pkl'
 		self.__time  = (_sta,_fin)
 		
@@ -70,7 +82,10 @@ class reader:
 	def __raw_reader(self,_file):
 		## customize each instrument
 		## read one filess
-		return None
+		with open(self.path/_file,'r',encoding='utf-8',errors='ignore') as f:
+			_df = read_csv(f,parse_dates={'time':['Date','Time']}).set_index('time')
+
+		return _df
 
 	def __raw_process(self,_df,_freq):
 		## customize each instrument
@@ -84,7 +99,7 @@ class reader:
 		## read pickle if pickle file exisits and 'reset=False' or process raw data
 		if (self.pkl_nam in listdir(self.path))&(~self.reset):
 			print(f"\n\t{dtm.now().strftime('%m/%d %X')} : Reading \033[96mPICKLE\033[0m file of {self.nam}")
-			with open(pth(self.path,self.pkl_nam),'rb') as f:
+			with open(self.path/self.pkl_nam,'rb') as f:
 				fout = pkl.load(f)
 			return fout
 		else: 
