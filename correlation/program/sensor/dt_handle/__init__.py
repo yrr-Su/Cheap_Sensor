@@ -8,6 +8,7 @@ from datetime import datetime as dtm
 from os import listdir, mkdir
 from os.path import join as pth, exists, dirname, realpath
 import pickle as pkl
+from pathlib import PurePath as Path
 from numpy import array, nan
 from pandas import date_range, concat, read_csv
 import json as jsn
@@ -35,7 +36,7 @@ __all__ = [
 
 # parameter
 cur_file_path = Path(dirname(realpath(__file__)))
-with open(cur_file_path/'metadata.json','r') as f:
+with open(cur_file_path/'meta.json','r') as f:
 	meta_dt = jsn.load(f)
 
 # class
@@ -70,8 +71,7 @@ class reader:
 		self.index = lambda _freq: date_range(_sta,_fin,freq=_freq)
 		self.path  = _path/self.nam
 		self.reset = _reset
-		self.meta_read = meta_dt[self.nam]['read']
-		# self.meta_plot = meta_dt[self.nam]['plot']
+		self.meta = meta_dt['read']
 		self.pkl_nam = f'{self.nam.lower()}.pkl'
 		self.__time  = (_sta,_fin)
 		
@@ -107,13 +107,13 @@ class reader:
 
 		##=================================================================================================================
 		## metadata parameter
-		ext_nam, dt_freq = self.meta_read.values()
+		ext_nam, dt_freq = self.meta.values()
 
 		## read raw data
 		_df_con = None
 		
 		for file in listdir(self.path):
-			if ext_nam not in file.lower(): continue
+			if (ext_nam not in file.lower())|('baseline' in file.lower()): continue
 			print(f"\r\t\treading {file}",end='')
 
 			_df = self.__raw_reader(file)
@@ -122,7 +122,7 @@ class reader:
 				_df_con = concat([_df_con,_df]) if _df_con is not None else _df
 
 		## concat the concated list
-		df = self.__raw_process(_df_con,dt_freq)
+		fout = self.__raw_process(_df_con,dt_freq)
 		print()
 
 		##=================================================================================================================
